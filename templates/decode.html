@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Décoder un fichier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitButton = document.querySelector('button[type="submit"]');
+            const inputFile = document.getElementById('image');
+
+            // Désactiver le bouton par défaut
+            submitButton.disabled = true;
+
+            // Fonction pour vérifier si un fichier a été sélectionné
+            inputFile.addEventListener('change', function() {
+                submitButton.disabled = !inputFile.value;  // Activer le bouton si un fichier est sélectionné
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Décoder un fichier à partir d'une image</h1>
+        <form method="post" enctype="multipart/form-data" class="form" id="decode-form">
+            <label for="image">Image :</label>
+            <input type="file" name="image" id="image" accept=".png">
+            <label for="output_name">Nom du fichier de sortie (facultatif) :</label>
+            <input type="text" name="output_name" id="output_name" placeholder="Entrez le nom de fichier souhaité">
+            <button type="submit" class="btn">Décoder</button>
+        </form>
+        <button onclick="window.location.href='/'" class="btn">Retour à l'accueil</button>
+    </div>
+    <div class="loader-backdrop"></div>
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

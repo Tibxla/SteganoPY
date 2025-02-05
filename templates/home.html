@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Accueil - Application de Stéganographie</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenue dans notre application de stéganographie</h1>
+        <p>Cette application vous permet d'encoder et de décoder des fichiers dans des images.</p>
+        <div class="links" style="text-align: center;"> 
+            <a href="/encode" class="btn">Encoder un fichier</a>
+            <a href="/decode" class="btn">Décoder un fichier</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Encoder un fichier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitButton = document.querySelector('#encode-form button[type="submit"]');
+            const imageInput = document.getElementById('image');
+            const fileInput = document.getElementById('file');
+
+            // Fonction pour vérifier si les fichiers sont sélectionnés
+            function updateButtonState() {
+                submitButton.disabled = !imageInput.value || !fileInput.value;
+            }
+
+            // Désactiver le bouton par défaut
+            updateButtonState();
+
+            // Ajouter des écouteurs pour les changements sur les champs de fichier
+            imageInput.addEventListener('change', updateButtonState);
+            fileInput.addEventListener('change', updateButtonState);
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Encoder un fichier dans une image</h1>
+        <form method="post" enctype="multipart/form-data" class="form" id="encode-form">
+            <label for="image">Image :</label>
+            <input type="file" name="image" id="image" accept=".png, .jpg">
+            <label for="file">Fichier à cacher :</label>
+            <input type="file" name="file" id="file" accept=".png, .jpg, .pdf, .doc, .exe, .txt, .zip, .mp3">
+            <label for="target_bit">Bit cible (0-7) :</label>
+            <select name="target_bit" id="target_bit">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+            </select>
+            <label for="output_name">Nom du fichier de sortie (facultatif) :</label>
+            <input type="text" name="output_name" id="output_name" placeholder="Entrez le nom de fichier souhaité">
+            <button type="submit" class="btn">Encoder</button>
+        </form>
+        <button onclick="window.location.href='/'" class="btn">Retour à l'accueil</button>
+    </div>
+    <div class="loader-backdrop"></div>
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
