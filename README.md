@@ -1,80 +1,128 @@
-# Steganography Tool - Hide Files in Images
+# SteganoPY
 
-A Flask-based web application that allows you to encode files into images (steganography) and decode them back. Supports various file types and customizable LSB (Least Significant Bit) embedding.
+Application web de stéganographie LSB : cache n'importe quel fichier dans une image PNG, et le récupère depuis cette même image.
 
+---
 
-## Features
+## Ce que fait le projet
 
-- **Encode Files**: Hide any file (PDF, TXT, PNG, etc.) within an image using LSB steganography.
-- **Decode Files**: Extract hidden files from encoded images.
-- **Customizable Bit**: Choose which LSB (0-7) to use for embedding data.
-- **Web Interface**: User-friendly web UI for easy interaction.
-- **File Type Detection**: Automatically detects the type of hidden file during decoding.
-- **Error Handling**: Checks for image size limits, valid bit ranges, and corrupted data.
+SteganoPY applique la technique **LSB (Least Significant Bit)** pour dissimuler des données dans les pixels d'une image. Le fichier à cacher est encodé en base64, précédé de sa longueur sur 4 octets, puis distribué bit par bit dans le canal rouge des pixels de l'image de couverture. Le premier pixel stocke le numéro du bit utilisé (0–7), ce qui rend le décodage autonome : l'image encodée se suffit à elle-même.
+
+L'interface est une application Flask accessible via navigateur.
+
+---
+
+## Stack technique
+
+| Composant   | Technologie              |
+|-------------|--------------------------|
+| Backend     | Python 3.10+, Flask      |
+| Traitement image | Pillow              |
+| Frontend    | HTML/CSS vanilla, JS fetch API |
+| Serveur dev | Flask built-in (port 5000) |
+
+---
+
+## Prérequis
+
+- Python 3.8 ou supérieur
+- pip
+
+---
 
 ## Installation
 
-1. **Clone the repository**:
-   
-         git clone https://github.com/yourusername/your-repo-name.git
-         cd your-repo-name
-   
-3. **Install dependencies**:
+```bash
+# 1. Cloner le dépôt
+git clone https://github.com/votre-utilisateur/SteganoPY.git
+cd SteganoPY
 
-         pip install -r requirements.txt
+# 2. (Optionnel) Créer un environnement virtuel
+python -m venv venv
+source venv/bin/activate        # Linux / macOS
+venv\Scripts\activate           # Windows
 
-## Usage
-   **Running the Application**:
+# 3. Installer les dépendances
+pip install -r requirements.txt
+```
 
-      python app.py   
-   Access the web interface at http://localhost:5000.
-  
-   **Encoding a File**:
+---
 
-   1. Go to the Encode page.
+## Lancement
 
-   2. Upload a cover image (PNG/JPG) and the file to hide.
+```bash
+python main.py
+```
 
-   3. Select the target LSB (0 = least significant, 7 = most noticeable).
+L'application est accessible à l'adresse : [http://localhost:5000](http://localhost:5000)
 
-   4. Click "Encode" to download the modified image.
+---
 
-   **Decoding a File**:
-   1. Go to the Decode page.
+## Structure du projet
 
-   2. Upload an encoded image.
+```
+SteganoPY/
+├── main.py              # Application Flask : routes et logique métier LSB
+├── requirements.txt     # Dépendances Python (Flask, Pillow)
+├── static/
+│   ├── style.css        # Styles (thème sombre, violet)
+│   └── script.js        # Soumission AJAX des formulaires, gestion du téléchargement
+└── templates/
+    ├── home.html        # Page d'accueil
+    ├── encode.html      # Formulaire d'encodage
+    ├── decode.html      # Formulaire de décodage
+    ├── 404.html         # Page d'erreur 404
+    └── 500.html         # Page d'erreur 500
+```
 
-   3. Click "Decode" to download the hidden file (automatically detects file type).
+---
 
+## Fonctionnalités
 
-## Supported File Types
+### Encoder un fichier dans une image
 
-   - Images: PNG, JPG
+1. Aller sur `/encode`
+2. Sélectionner une image de couverture (PNG ou JPG)
+3. Sélectionner le fichier à cacher
+4. Choisir le bit cible (0 = moins visible, 7 = modifications les plus perceptibles)
+5. Optionnel : donner un nom au fichier de sortie
+6. Cliquer sur **Encoder** — l'image modifiée est téléchargée au format PNG
 
-   - Documents: PDF, DOC, TXT
+**Contrainte de taille :** l'image de couverture doit contenir suffisamment de pixels pour stocker les données. La formule est : `(taille_base64 * 8 + 33) pixels minimum`.
 
-   - Archives: ZIP
-   
-   - Executables: EXE
-   
-   - Audio: MP3
-   
-   - *More types can be added by extending the decode_file_from_image function.*
+### Décoder un fichier depuis une image
 
-## Example
-   **Encode a Secret Message:**
-   
-   1. Encode secret.txt into cat.png using LSB bit 0.
-   
-   2. Download encoded_image.png.
-   
-   **Decode the Message:**
-   
-   1. Upload encoded_image.png to the Decode page.
-   
-   2. The app extracts secret.txt automatically.
+1. Aller sur `/decode`
+2. Sélectionner une image PNG préalablement encodée par SteganoPY
+3. Optionnel : donner un nom au fichier extrait
+4. Cliquer sur **Décoder** — le fichier caché est téléchargé avec son extension détectée automatiquement
 
-## Notes
-- Higher LSB bits (e.g., bit 7) may cause visible artifacts in the image.
+### Détection automatique du type de fichier
 
-- The first pixel stores the target bit value (0-7) in its red channel.
+Le décodage identifie le type du fichier caché par ses magic bytes :
+
+| Type    | Signature                        |
+|---------|----------------------------------|
+| PNG     | `\x89PNG`                        |
+| JPG     | `\xFF\xD8\xFF`                   |
+| PDF     | `%PDF`                           |
+| ZIP     | `PK\x03\x04`                     |
+| DOC     | `\xD0\xCF\x11\xE0...`            |
+| EXE     | `MZ`                             |
+| MP3     | `ID3`                            |
+| TXT     | texte UTF-8 valide (fallback)    |
+
+---
+
+## Notes techniques
+
+- L'image de couverture doit être fournie au format PNG ou JPG. Elle est toujours sauvegardée en **PNG** pour éviter les pertes de compression.
+- Les fichiers temporaires sont créés et supprimés en mémoire/disque pour chaque requête — aucun fichier intermédiaire n'est conservé sur le serveur.
+- L'encodage en base64 augmente la taille des données d'environ 33 %, ce qui influe sur la taille minimale requise de l'image.
+- Bit 0 : modification imperceptible à l'œil nu. Bit 7 : altération visible des couleurs.
+
+---
+
+## Licence
+
+Ce projet n'inclut pas de fichier de licence explicite.
